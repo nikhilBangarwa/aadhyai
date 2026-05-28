@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "621779756153",
+    "project_id": "aadhyai",
+    "storage_bucket": "aadhyai.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:621779756153:android:8dafa724fce31b3f6020a8",
+        "android_client_info": {
+          "package_name": "com.example.aadhyai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "621779756153-fvran9gbim11hcuknsa81loh3q3v3slc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACphDji8wtZha1kqsLhIGnvHgZVAJEQP4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "621779756153-fvran9gbim11hcuknsa81loh3q3v3slc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
