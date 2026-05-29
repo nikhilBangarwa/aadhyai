@@ -2,6 +2,7 @@ import 'package:aadhyai/onboard/subject/subject_section/subject_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sizer/sizer.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,15 +16,14 @@ class _HomeScreenState extends State<HomeScreen>
   String _name = '';
   int _classNum = 0;
   String _photo = '';
-  String _email = '';
 
   late AnimationController _animCtrl;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
 
   final List<String> _classes = [
-    '1st', '2nd', '3rd', '4th', '5th', '6th',
-    '7th', '8th', '9th', '10th', '11th', '12th',
+    '1st','2nd','3rd','4th','5th','6th',
+    '7th','8th','9th','10th','11th','12th',
   ];
 
   @override
@@ -34,24 +34,21 @@ class _HomeScreenState extends State<HomeScreen>
       statusBarIconBrightness: Brightness.dark,
     ));
     _animCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
-    _fadeAnim = CurvedAnimation(parent: _animCtrl, curve: Curves.easeIn);
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.06),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutCubic));
+        vsync: this, duration: const Duration(milliseconds: 700));
+    _fadeAnim =
+        CurvedAnimation(parent: _animCtrl, curve: Curves.easeIn);
+    _slideAnim =
+        Tween<Offset>(begin: const Offset(0, 0.05), end: Offset.zero).animate(
+            CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutCubic));
     _loadUser();
   }
 
   Future<void> _loadUser() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _name = prefs.getString('user_name') ?? '';
+      _name     = prefs.getString('user_name') ?? '';
       _classNum = prefs.getInt('user_class') ?? 0;
-      _photo = prefs.getString('user_photo') ?? '';
-      _email = prefs.getString('user_email') ?? '';
+      _photo    = prefs.getString('user_photo') ?? '';
     });
     _animCtrl.forward();
   }
@@ -62,17 +59,18 @@ class _HomeScreenState extends State<HomeScreen>
     super.dispose();
   }
 
-  String get _classLabel {
-    if (_classNum < 1 || _classNum > 12) return '';
-    return '${_classes[_classNum - 1]} Class';
-  }
+  String get _classLabel =>
+      (_classNum >= 1 && _classNum <= 12) ? '${_classes[_classNum - 1]} Class' : '';
 
   String get _initials {
-    final parts = _name.trim().split(' ');
-    if (parts.isEmpty || parts[0].isEmpty) return '?';
-    if (parts.length == 1) return parts[0][0].toUpperCase();
-    return (parts[0][0] + parts[1][0]).toUpperCase();
+    final p = _name.trim().split(' ');
+    if (p.isEmpty || p[0].isEmpty) return '?';
+    return p.length == 1
+        ? p[0][0].toUpperCase()
+        : (p[0][0] + (p[1].isNotEmpty ? p[1][0] : '')).toUpperCase();
   }
+
+  // ── BUILD ──────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -87,19 +85,33 @@ class _HomeScreenState extends State<HomeScreen>
               _buildAppBar(),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+                  padding: EdgeInsets.fromLTRB(4.w, 1.h, 4.w, 12.h),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildWelcomeBanner(),
-                      const SizedBox(height: 28),
+                      SizedBox(height: 2.h),
+                      _buildStreakAndGoal(),
+                      SizedBox(height: 2.5.h),
                       _buildSectionTitle('Quick Access'),
-
+                      SizedBox(height: 1.2.h),
                       _buildQuickAccess(),
-                      const SizedBox(height: 28),
+                      SizedBox(height: 2.5.h),
                       _buildSectionTitle('Continue Learning'),
-                      const SizedBox(height: 14),
+                      SizedBox(height: 1.2.h),
                       _buildContinueCards(),
+                      SizedBox(height: 2.5.h),
+                      _buildSectionTitle('Weekly Performance'),
+                      SizedBox(height: 1.2.h),
+                      _buildWeeklyPerformance(),
+                      SizedBox(height: 2.5.h),
+                      _buildSectionTitle('Recommended'),
+                      SizedBox(height: 1.2.h),
+                      _buildRecommendedSubjects(),
+                      SizedBox(height: 2.5.h),
+                      _buildSectionTitle('Achievements'),
+                      SizedBox(height: 1.2.h),
+                      _buildAchievements(),
                     ],
                   ),
                 ),
@@ -108,11 +120,10 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
-  // ── AppBar ──────────────────────────────────────────────────────────────
+  // ── APP BAR ────────────────────────────────────────────────────────────
 
   Widget _buildAppBar() {
     return SliverAppBar(
@@ -120,20 +131,15 @@ class _HomeScreenState extends State<HomeScreen>
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       pinned: true,
-      expandedHeight: 0,
-      toolbarHeight: 68,
+      toolbarHeight: 8.h,
       automaticallyImplyLeading: false,
       flexibleSpace: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.symmetric(horizontal: 4.w),
           child: Row(
             children: [
-              // Avatar
-              _buildAvatar(radius: 22),
-
-              const SizedBox(width: 12),
-
-              // Name + Class
+              _buildAvatar(radius: 5.8.w),
+              SizedBox(width: 3.w),
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -141,40 +147,27 @@ class _HomeScreenState extends State<HomeScreen>
                   children: [
                     Text(
                       _name.isEmpty ? 'Welcome!' : 'Hi, $_name 👋',
-                      style: const TextStyle(
-                        fontSize: 16,
+                      style: TextStyle(
+                        fontSize: 13.sp,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A0535),
-                        letterSpacing: -0.3,
+                        color: const Color(0xFF1A0535),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                     if (_classLabel.isNotEmpty)
                       Text(
                         _classLabel,
-                        style: const TextStyle(
-                          fontSize: 12,
+                        style: TextStyle(
+                          fontSize: 9.5.sp,
+                          color: const Color(0xFF9B7DC0),
                           fontWeight: FontWeight.w500,
-                          color: Color(0xFF9B7DC0),
                         ),
                       ),
                   ],
                 ),
               ),
-
-              // Notification icon
-              _IconBtn(
-                icon: Icons.notifications_outlined,
-                badge: true,
-                onTap: () {},
-              ),
-              const SizedBox(width: 8),
-              // Settings icon
-              _IconBtn(
-                icon: Icons.settings_outlined,
-                onTap: () {},
-              ),
+              _IconBtn(icon: Icons.notifications_outlined, badge: true),
+              SizedBox(width: 2.w),
+              _IconBtn(icon: Icons.settings_outlined),
             ],
           ),
         ),
@@ -182,49 +175,42 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  // ── Avatar ──────────────────────────────────────────────────────────────
+  // ── AVATAR ─────────────────────────────────────────────────────────────
 
   Widget _buildAvatar({double radius = 24}) {
-    if (_photo.isNotEmpty) {
-      return CircleAvatar(
-        radius: radius,
-        backgroundImage: NetworkImage(_photo),
-        backgroundColor: const Color(0xFFE8E0F5),
-      );
-    }
     return CircleAvatar(
       radius: radius,
       backgroundColor: const Color(0xFF7B2FBE),
-      child: Text(
-        _initials,
-        style: TextStyle(
-          fontSize: radius * 0.7,
-          fontWeight: FontWeight.w700,
-          color: Colors.white,
-          letterSpacing: 0,
-        ),
-      ),
+      backgroundImage: _photo.isNotEmpty ? NetworkImage(_photo) : null,
+      child: _photo.isEmpty
+          ? Text(_initials,
+          style: TextStyle(
+            fontSize: radius * 0.65,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ))
+          : null,
     );
   }
 
-  // ── Welcome Banner ──────────────────────────────────────────────────────
+  // ── WELCOME BANNER ─────────────────────────────────────────────────────
 
   Widget _buildWelcomeBanner() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(5.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF7B2FBE), Color(0xFF5B1F9E)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(5.w),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF7B2FBE).withOpacity(0.30),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: const Color(0xFF7B2FBE).withOpacity(0.38),
+            blurRadius: 25,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -235,217 +221,315 @@ class _HomeScreenState extends State<HomeScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _name.isEmpty
-                      ? "Let's start learning!"
-                      : "Let's go, $_name!",
-                  style: const TextStyle(
-                    fontSize: 20,
+                  _name.isEmpty ? "Let's start learning!" : "Let's go, $_name!",
+                  style: TextStyle(
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
                     letterSpacing: -0.3,
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 0.6.h),
                 Text(
                   _classLabel.isEmpty
                       ? 'Your AI study partner'
                       : '$_classLabel • AI-powered learning',
                   style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.white.withOpacity(0.78),
+                    fontSize: 10.sp,
+                    color: Colors.white.withOpacity(0.80),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 2.h),
+                // AI Search bar
                 Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 4.w, vertical: 1.4.h),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.18),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(
+                        color: Colors.white.withOpacity(0.25), width: 1),
                   ),
-                  child: const Text(
-                    '✨  Ask AadhyaAI anything',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.auto_awesome,
+                          color: Colors.white, size: 4.5.w),
+                      SizedBox(width: 2.w),
+                      Text(
+                        'Ask AadhyaAI anything',
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 4.w),
+          _buildAvatar(radius: 9.w),
+        ],
+      ),
+    );
+  }
+
+  // ── STREAK + GOAL (side by side) ───────────────────────────────────────
+
+  Widget _buildStreakAndGoal() {
+    return Row(
+      children: [
+        // Streak card
+        Expanded(
+          child: Container(
+            padding: EdgeInsets.all(3.8.w),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
+              ),
+              borderRadius: BorderRadius.circular(4.w),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.orange.withOpacity(0.28),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Text('🔥', style: TextStyle(fontSize: 18.sp)),
+                SizedBox(width: 2.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '3 Day Streak!',
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        "Don't break it!",
+                        style: TextStyle(
+                          fontSize: 12.5.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 9.w,
+                  height: 9.w,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.25),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '3',
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          _buildAvatar(radius: 32),
-        ],
-      ),
-    );
-  }
-
-  // ── Section Title ───────────────────────────────────────────────────────
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w800,
-        color: Color(0xFF1A0535),
-        letterSpacing: -0.3,
-      ),
-    );
-  }
-
-  // ── Quick Access Grid ───────────────────────────────────────────────────
-
-  Widget _buildQuickAccess() {
-    final items = [
-      _QuickItem(
-        emoji: '🧠',
-        label: 'AI Tutor',
-        color: const Color(0xFF7B2FBE),
-        onTap: () => Navigator.of(context).pushNamed('/ai-tutor'),
-      ),
-      _QuickItem(
-        emoji: '📝',
-        label: 'Practice',
-        color: const Color(0xFF5B4FCF),
-        onTap: () => Navigator.of(context).pushNamed('/practice'),
-      ),
-      _QuickItem(
-        emoji: '📊',
-        label: 'Progress',
-        color: const Color(0xFF2D9CDB),
-        onTap: () => Navigator.of(context).pushNamed('/progress'),
-      ),
-      _QuickItem(
-        emoji: '📚',
-        label: 'Subjects',
-        color: const Color(0xFF27AE60),
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const SubjectScreen()),
         ),
-      ),
-    ];
-
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 0.9,
-      ),
-      itemCount: items.length,
-      itemBuilder: (_, i) {
-        final item = items[i];
-        return GestureDetector(
-          onTap: item.onTap,
+        SizedBox(width: 3.w),
+        // Today's goal card
+        Expanded(
           child: Container(
+            padding: EdgeInsets.all(3.8.w),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(4.w),
               boxShadow: [
                 BoxShadow(
-                  color: item.color.withOpacity(0.10),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+                  color: const Color(0xFF7B2FBE).withOpacity(0.08),
+                  blurRadius: 14,
+                  offset: const Offset(0, 5),
                 ),
               ],
             ),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: item.color.withOpacity(0.10),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Center(
-                    child: Text(item.emoji,
-                        style: const TextStyle(fontSize: 22)),
+                Row(
+                  children: [
+                    Text('🎯', style: TextStyle(fontSize: 13.sp)),
+                    SizedBox(width: 1.5.w),
+                    Text(
+                      "Today's Goal",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1A0535),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 1.2.h),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: 0.70,
+                    minHeight: 0.8.h,
+                    backgroundColor:
+                    const Color(0xFF7B2FBE).withOpacity(0.12),
+                    valueColor: const AlwaysStoppedAnimation(
+                        Color(0xFF7B2FBE)),
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 0.8.h),
                 Text(
-                  item.label,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A0535),
+                  '15 Math Problems',
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1A0535),
                   ),
-                  textAlign: TextAlign.center,
+                ),
+                Text(
+                  '70% Completed',
+                  style: TextStyle(
+                    fontSize: 11.5.sp,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF9B7DC0),
+                  ),
                 ),
               ],
             ),
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 
-  // ── Continue Learning Cards ─────────────────────────────────────────────
+  // ── QUICK ACCESS ───────────────────────────────────────────────────────
+
+  Widget _buildQuickAccess() {
+    final items = [
+      _QuickItem(emoji: '🧠', label: 'AI Tutor',  color: const Color(0xFF7B2FBE),
+          onTap: () => Navigator.of(context).pushNamed('/ai-tutor')),
+      _QuickItem(emoji: '📝', label: 'Practice',  color: const Color(0xFF5B4FCF),
+          onTap: () => Navigator.of(context).pushNamed('/practice')),
+      _QuickItem(emoji: '📊', label: 'Progress',  color: const Color(0xFF2D9CDB),
+          onTap: () => Navigator.of(context).pushNamed('/progress')),
+      _QuickItem(emoji: '📚', label: 'Subjects',  color: const Color(0xFF27AE60),
+          onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const SubjectScreen()))),
+    ];
+
+    return Row(
+      children: items.map((item) {
+        return Expanded(
+          child: GestureDetector(
+            onTap: item.onTap,
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 1.w),
+              padding: EdgeInsets.symmetric(vertical: 1.8.h),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4.w),
+                boxShadow: [
+                  BoxShadow(
+                    color: item.color.withOpacity(0.12),
+                    blurRadius: 12,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 11.w,
+                    height: 11.w,
+                    decoration: BoxDecoration(
+                      color: item.color.withOpacity(0.10),
+                      borderRadius: BorderRadius.circular(3.w),
+                    ),
+                    child: Center(
+                      child: Text(item.emoji,
+                          style: TextStyle(fontSize: 8.w)),
+                    ),
+                  ),
+                  SizedBox(height: 0.8.h),
+                  Text(
+                    item.label,
+                    style: TextStyle(
+                      fontSize: 13.5.sp,
+                      fontWeight: FontWeight.w900,
+                      color: const Color(0xFF1A0535),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  // ── CONTINUE LEARNING ──────────────────────────────────────────────────
 
   Widget _buildContinueCards() {
     final cards = [
-      _LearnCard(
-        subject: 'Mathematics',
-        topic: 'Quadratic Equations',
-        progress: 0.65,
-        emoji: '📐',
-        color: const Color(0xFF7B2FBE),
-      ),
-      _LearnCard(
-        subject: 'Science',
-        topic: 'Laws of Motion',
-        progress: 0.40,
-        emoji: '⚗️',
-        color: const Color(0xFF2D9CDB),
-      ),
-      _LearnCard(
-        subject: 'English',
-        topic: 'Grammar & Writing',
-        progress: 0.80,
-        emoji: '✍️',
-        color: const Color(0xFF27AE60),
-      ),
+      _LearnCard(subject: 'Mathematics', topic: 'Quadratic Equations',
+          progress: 0.65, emoji: '📐', color: const Color(0xFF7B2FBE)),
+      _LearnCard(subject: 'Science', topic: 'Laws of Motion',
+          progress: 0.40, emoji: '⚗️', color: const Color(0xFF2D9CDB)),
+      _LearnCard(subject: 'English', topic: 'Grammar & Writing',
+          progress: 0.80, emoji: '✍️', color: const Color(0xFF27AE60)),
     ];
 
     return Column(
       children: cards.map((card) {
         return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
+          margin: EdgeInsets.only(bottom: 1.8.h),
+          padding: EdgeInsets.all(4.w),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(4.w),
             boxShadow: [
               BoxShadow(
-                color: card.color.withOpacity(0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+                color: card.color.withOpacity(0.10),
+                blurRadius: 14,
+                offset: const Offset(0, 5),
               ),
             ],
           ),
           child: Row(
             children: [
               Container(
-                width: 48,
-                height: 48,
+                width: 13.w,
+                height: 13.w,
                 decoration: BoxDecoration(
                   color: card.color.withOpacity(0.10),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(3.5.w),
                 ),
                 child: Center(
-                  child:
-                  Text(card.emoji, style: const TextStyle(fontSize: 24)),
+                  child: Text(card.emoji,
+                      style: TextStyle(fontSize: 8.w)),
                 ),
               ),
-              const SizedBox(width: 14),
+              SizedBox(width: 3.5.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -453,26 +537,26 @@ class _HomeScreenState extends State<HomeScreen>
                     Text(
                       card.subject,
                       style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.bold,
                         color: card.color,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 0.3.h),
                     Text(
                       card.topic,
-                      style: const TextStyle(
-                        fontSize: 15,
+                      style: TextStyle(
+                        fontSize: 14.sp,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A0535),
+                        color: const Color(0xFF1A0535),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 1.h),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
                         value: card.progress,
-                        minHeight: 5,
+                        minHeight: 0.65.h,
                         backgroundColor: card.color.withOpacity(0.12),
                         valueColor:
                         AlwaysStoppedAnimation<Color>(card.color),
@@ -481,16 +565,16 @@ class _HomeScreenState extends State<HomeScreen>
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 3.w),
               Container(
-                width: 36,
-                height: 36,
+                width: 10.w,
+                height: 10.w,
                 decoration: BoxDecoration(
                   color: card.color.withOpacity(0.10),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.play_arrow_rounded,
-                    color: card.color, size: 20),
+                    color: card.color, size: 6.w),
               ),
             ],
           ),
@@ -499,52 +583,293 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  // ── Bottom Nav ──────────────────────────────────────────────────────────
+  // ── WEEKLY PERFORMANCE ─────────────────────────────────────────────────
 
-  Widget _buildBottomNav() {
+  Widget _buildWeeklyPerformance() {
+    final days   = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final values = [0.35, 0.60, 0.80, 0.45, 0.90, 0.70, 0.30];
+    final today  = DateTime.now().weekday - 1;
+
     return Container(
+      padding: EdgeInsets.all(4.w),
       decoration: BoxDecoration(
         color: Colors.white,
+        borderRadius: BorderRadius.circular(5.w),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF7B2FBE).withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
+            color: const Color(0xFF7B2FBE).withOpacity(0.07),
+            blurRadius: 16,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _NavItem(icon: Icons.home_rounded, label: 'Home', selected: true),
-              _NavItem(icon: Icons.auto_stories_outlined, label: 'Learn'),
-              _NavItem(icon: Icons.quiz_outlined, label: 'Practice'),
-              _NavItem(icon: Icons.person_outline_rounded, label: 'Profile'),
+              Text(
+                'This Week',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1A0535),
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: 3.w, vertical: 0.5.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF7B2FBE).withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '4.2 hrs avg',
+                  style: TextStyle(
+                    fontSize: 13.5.sp,
+                    color: const Color(0xFF7B2FBE),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ],
           ),
-        ),
+          SizedBox(height: 2.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: List.generate(7, (i) {
+              final isToday = i == today;
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (isToday)
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 0.4.h),
+                      child: Container(
+                        width: 1.5.w,
+                        height: 1.5.w,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF7B2FBE),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  Container(
+                    width: 7.w,
+                    height: 8.h * values[i],
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: isToday
+                            ? [const Color(0xFF9B4DFF), const Color(0xFF7B2FBE)]
+                            : [const Color(0xFFE0D5F5), const Color(0xFFCDBFE8)],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  SizedBox(height: 0.8.h),
+                  Text(
+                    days[i],
+                    style: TextStyle(
+                      fontSize: 13.5.sp,
+                      fontWeight: isToday
+                          ? FontWeight.bold
+                          : FontWeight.bold,
+                      color: isToday
+                          ? const Color(0xFF7B2FBE)
+                          : const Color(0xFF9B7DC0),
+                    ),
+                  ),
+                ],
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── RECOMMENDED SUBJECTS ───────────────────────────────────────────────
+
+  Widget _buildRecommendedSubjects() {
+    final subjects = [
+      {'name': 'Physics',   'emoji': '⚡', 'color': const Color(0xFF2D9CDB)},
+      {'name': 'Chemistry', 'emoji': '🧪', 'color': const Color(0xFF9C27B0)},
+      {'name': 'Biology',   'emoji': '🧬', 'color': const Color(0xFF4CAF50)},
+      {'name': 'History',   'emoji': '📜', 'color': const Color(0xFF795548)},
+      {'name': 'Geography', 'emoji': '🗺️', 'color': const Color(0xFF00BCD4)},
+    ];
+
+    return SizedBox(
+      height: 17.h,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: subjects.length,
+        itemBuilder: (_, i) {
+          final sub   = subjects[i];
+          final color = sub['color'] as Color;
+          return GestureDetector(
+            onTap: () {},
+            child: Container(
+              width: 28.w,
+              margin: EdgeInsets.only(right: 3.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4.w),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.10),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 12.w,
+                    height: 12.w,
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.10),
+                      borderRadius: BorderRadius.circular(3.w),
+                    ),
+                    child: Center(
+                      child: Text(sub['emoji'] as String,
+                          style: TextStyle(fontSize: 16.sp)),
+                    ),
+                  ),
+                  SizedBox(height: 1.h),
+                  Text(
+                    sub['name'] as String,
+                    style: TextStyle(
+                      fontSize: 15.5.sp,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1A0535),
+                    ),
+                  ),
+                  SizedBox(height: 0.3.h),
+                  Text(
+                    'Recommended',
+                    style: TextStyle(
+                      fontSize: 13.5.sp,
+                      color: color,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // ── ACHIEVEMENTS ───────────────────────────────────────────────────────
+
+  Widget _buildAchievements() {
+    final badges = [
+      _Badge(emoji: '🏆', label: 'Top Scorer',  earned: true),
+      _Badge(emoji: '🔥', label: '7-Day Streak', earned: true),
+      _Badge(emoji: '📚', label: 'Bookworm',     earned: true),
+      _Badge(emoji: '⚡', label: 'Speed Solver', earned: false),
+      _Badge(emoji: '🌟', label: 'Perfect Quiz', earned: false),
+    ];
+
+    return SizedBox(
+      height: 14.h,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: badges.length,
+        itemBuilder: (_, i) {
+          final b = badges[i];
+          return Container(
+            width: 22.w,
+            margin: EdgeInsets.only(right: 3.w),
+            decoration: BoxDecoration(
+              color: b.earned ? Colors.white : Colors.white.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(4.w),
+              border: Border.all(
+                color: b.earned
+                    ? const Color(0xFF7B2FBE).withOpacity(0.20)
+                    : Colors.grey.shade200,
+                width: 1.5,
+              ),
+              boxShadow: b.earned
+                  ? [
+                BoxShadow(
+                  color: const Color(0xFF7B2FBE).withOpacity(0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+                  : [],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Opacity(
+                  opacity: b.earned ? 1.0 : 0.35,
+                  child: Text(b.emoji,
+                      style: TextStyle(fontSize: 16.sp)),
+                ),
+                SizedBox(height: 0.6.h),
+                Text(
+                  b.label,
+                  style: TextStyle(
+                    fontSize: 12.8.sp,
+                    fontWeight: FontWeight.w700,
+                    color: b.earned
+                        ? const Color(0xFF1A0535)
+                        : Colors.grey,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (!b.earned)
+                  Text(
+                    'Locked 🔒',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      color: Colors.grey,
+                    ),
+                  ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // ── SECTION TITLE ──────────────────────────────────────────────────────
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 17.sp,
+        fontWeight: FontWeight.w800,
+        color: const Color(0xFF1A0535),
+        letterSpacing: -0.3,
       ),
     );
   }
 }
 
-// ─── Helper Models ────────────────────────────────────────────────────────
+// ─── Models ────────────────────────────────────────────────────────────────
 
 class _QuickItem {
-  final String emoji;
-  final String label;
+  final String emoji, label;
   final Color color;
   final VoidCallback onTap;
-
   const _QuickItem({
-    required this.emoji,
-    required this.label,
-    required this.color,
-    required this.onTap,
+    required this.emoji, required this.label,
+    required this.color, required this.onTap,
   });
 }
 
@@ -552,105 +877,59 @@ class _LearnCard {
   final String subject, topic, emoji;
   final double progress;
   final Color color;
-
   const _LearnCard({
-    required this.subject,
-    required this.topic,
-    required this.progress,
-    required this.emoji,
-    required this.color,
+    required this.subject, required this.topic, required this.progress,
+    required this.emoji,   required this.color,
   });
 }
 
-// ─── Reusable Widgets ─────────────────────────────────────────────────────
+class _Badge {
+  final String emoji, label;
+  final bool earned;
+  const _Badge({required this.emoji, required this.label, required this.earned});
+}
+
+// ─── Icon Button ───────────────────────────────────────────────────────────
 
 class _IconBtn extends StatelessWidget {
   final IconData icon;
   final bool badge;
-  final VoidCallback onTap;
-
-  const _IconBtn({required this.icon, required this.onTap, this.badge = false});
+  const _IconBtn({required this.icon, this.badge = false});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF7B2FBE).withOpacity(0.08),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Icon(icon, color: const Color(0xFF7B2FBE), size: 22),
-            if (badge)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE53935),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.5),
-                  ),
+    return Container(
+      width: 10.5.w,
+      height: 10.5.w,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(3.w),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF7B2FBE).withOpacity(0.09),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Icon(icon, color: const Color(0xFF7B2FBE), size: 6.w),
+          if (badge)
+            Positioned(
+              top: 2.w,
+              right: 2.w,
+              child: Container(
+                width: 2.2.w,
+                height: 2.2.w,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE53935),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1),
                 ),
               ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _NavItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool selected;
-
-  const _NavItem(
-      {required this.icon, required this.label, this.selected = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final color =
-    selected ? const Color(0xFF7B2FBE) : const Color(0xFFB0A0C8);
-    return GestureDetector(
-      onTap: () {},
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            decoration: BoxDecoration(
-              color: selected
-                  ? const Color(0xFF7B2FBE).withOpacity(0.10)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-              color: color,
-            ),
-          ),
         ],
       ),
     );
